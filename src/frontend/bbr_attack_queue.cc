@@ -3,7 +3,7 @@
 #include <limits>
 #include <chrono>
 #include <cassert>
-#include <fstream>
+#include <iostream>
 
 #include "bbr_attack_queue.hh"
 #include "timestamp.hh"
@@ -50,9 +50,10 @@ void BBRAttackQueue::detectState(Packet &p)
 void BBRAttackQueue::computeDelay(Packet &p)
 {
     const uint64_t d = k * p.contents.size() / attack_rate;
-    Packet prev = packet_queue_.back();
-    if (current_arrival_rate > attack_rate && !packet_queue_.empty())
+    if (current_arrival_rate > attack_rate && !packet_queue_.empty()) {
+        Packet prev = packet_queue_.back();
         p.dequeue_time = prev.dequeue_time + p.contents.size() / attack_rate;
+    }
     else
         p.dequeue_time = p.arrival_time + d;
 

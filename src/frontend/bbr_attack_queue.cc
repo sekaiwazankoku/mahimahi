@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cassert>
 #include <iostream>
+#include <unistd.h>
 
 #include "bbr_attack_queue.hh"
 #include "timestamp.hh"
@@ -33,7 +34,7 @@ void BBRAttackQueue::detectState(Packet &p)
     if (!packet_queue_.empty())
     {
         Packet prev = packet_queue_.back();
-        current_arrival_rate = p.contents.size() / (p.arrival_time - prev.arrival_time);
+        current_arrival_rate = (double)p.contents.size() / (p.arrival_time - prev.arrival_time); // *1000 = Mbps
 
         if (current_arrival_rate >= probe_gain * arrival_rate && state == CRUISE)
             state = PROBE;
@@ -50,9 +51,11 @@ void BBRAttackQueue::detectState(Packet &p)
 void BBRAttackQueue::computeDelay(Packet &p)
 {
     const uint64_t d = k * p.contents.size() / attack_rate;
-    if (current_arrival_rate > attack_rate && !packet_queue_.empty()) {
+    // Todo: can we remove k and current_arrival_rate?
+    if (current_arrival_rate > attack_rate && !packet_queue_.empty())
+    {
         Packet prev = packet_queue_.back();
-        p.dequeue_time = prev.dequeue_time + p.contents.size() / attack_rate;
+        p.dequeue_time = prev.dequeue_time + (double)p.contents.size() / attack_rate;
     }
     else
         p.dequeue_time = p.arrival_time + d;
@@ -62,7 +65,8 @@ void BBRAttackQueue::computeDelay(Packet &p)
 
 void BBRAttackQueue::read_packet(const string &contents)
 {
-    Packet p = {timestamp(), timestamp(), contents};
+    uint64_t now = timestamp_nano();
+    Packet p = {now, now, contents};
     detectState(p);
     computeDelay(p);
     packet_queue_.emplace(p);
@@ -70,7 +74,7 @@ void BBRAttackQueue::read_packet(const string &contents)
 
 void BBRAttackQueue::write_packets(FileDescriptor &fd)
 {
-    while ((!packet_queue_.empty()) && (packet_queue_.front().dequeue_time <= timestamp()))
+    while ((!packet_queue_.empty()) && (packet_queue_.front().dequeue_time <= timestamp_nano()))
     {
         fd.write(packet_queue_.front().contents);
         packet_queue_.pop();
@@ -84,7 +88,7 @@ unsigned int BBRAttackQueue::wait_time(void) const
         return numeric_limits<uint16_t>::max();
     }
 
-    const auto now = timestamp();
+    const auto now = timestamp_nano();
 
     if (packet_queue_.front().dequeue_time <= now)
     {

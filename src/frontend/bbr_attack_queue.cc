@@ -50,15 +50,14 @@ void BBRAttackQueue::detectState(Packet &p)
 
 void BBRAttackQueue::computeDelay(Packet &p)
 {
-    const uint64_t d = k * p.contents.size() / attack_rate;
-    // Todo: can we remove k and current_arrival_rate?
-    if (current_arrival_rate > attack_rate && !packet_queue_.empty())
+    const uint64_t d = (double)p.contents.size() / attack_rate;
+    uint64_t last = p.arrival_time;
+    if (!packet_queue_.empty())
     {
         Packet prev = packet_queue_.back();
-        p.dequeue_time = prev.dequeue_time + (double)p.contents.size() / attack_rate;
+        last = max(prev.dequeue_time, last);
     }
-    else
-        p.dequeue_time = p.arrival_time + d;
+    p.dequeue_time = last + d;
 
     assert(p.dequeue_time - p.arrival_time <= delay_budget);
 }

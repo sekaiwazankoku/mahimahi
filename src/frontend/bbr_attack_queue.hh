@@ -6,6 +6,8 @@
 #include <queue>
 #include <cstdint>
 #include <string>
+#include <fstream>
+#include <memory>
 
 #include "file_descriptor.hh"
 

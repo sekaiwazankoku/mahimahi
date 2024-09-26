@@ -23,6 +23,18 @@ BBRAttackQueue::BBRAttackQueue(
       state(CRUISE),
       packet_queue_()
 {
+    // adding the logging fucntionality
+    if (!logfile.empty()) {
+        log_.reset(new ofstream(logfile));
+        if (!log_->is_open()) {
+            cerr << logfile << ": error opening for writing" << endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        *log_ << "# mm-bbr-attack log" << endl;
+        *log_ << "# attack_rate: " << attack_rate << " queue_size: " << k << " delay_budget: " << delay_budget << endl;
+        *log_ << "# base timestamp: " << timestamp() << endl;
+    }
 }
 
 void BBRAttackQueue::detectState(Packet &p)
@@ -45,6 +57,10 @@ void BBRAttackQueue::detectState(Packet &p)
             arrival_rate = current_arrival_rate; // Update arrival_rate
             state = CRUISE;
         }
+        
+        // Log the state change
+        if (log_)
+            *log_ << p.arrival_time / 1000000 << " STATE_CHANGE: " << state << endl; // Convert to ms (?)
     }
 }
 
@@ -61,6 +77,10 @@ void BBRAttackQueue::computeDelay(Packet &p)
         p.dequeue_time = p.arrival_time + d;
 
     assert(p.dequeue_time - p.arrival_time <= delay_budget);
+
+    // Log the delay calculation
+    if (log_)
+        *log_ << p.arrival_time / 1000000 << " DELAY_CALCULATED: " << (p.dequeue_time - p.arrival_time) / 1000000 << " ms" << endl;
 }
 
 void BBRAttackQueue::read_packet(const string &contents)
@@ -70,6 +90,10 @@ void BBRAttackQueue::read_packet(const string &contents)
     detectState(p);
     computeDelay(p);
     packet_queue_.emplace(p);
+
+    // Log the arrival
+    if (log_)
+        *log_ << now / 1000000 << " + " << contents.size() << endl;
 }
 
 void BBRAttackQueue::write_packets(FileDescriptor &fd)
@@ -77,6 +101,9 @@ void BBRAttackQueue::write_packets(FileDescriptor &fd)
     while ((!packet_queue_.empty()) && (packet_queue_.front().dequeue_time <= timestamp_nano()))
     {
         fd.write(packet_queue_.front().contents);
+        // Log the departure
+        if (log_)
+            *log_ << packet_queue_.front().dequeue_time / 1000000 << " - " << packet_queue_.front().contents.size() << endl;
         packet_queue_.pop();
     }
 }

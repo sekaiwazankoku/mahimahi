@@ -60,7 +60,7 @@ void BBRAttackQueue::detectState(Packet &p)
         
         // Log the state change
         if (log_)
-            *log_ << p.arrival_time / 1000000 << " STATE_CHANGE: " << state << endl; // Convert to ms (?)
+            *log_ << p.arrival_time << " STATE_CHANGE: " << state << endl; // Convert to ms (?)
     }
 }
 
@@ -80,12 +80,12 @@ void BBRAttackQueue::computeDelay(Packet &p)
 
     // Log the delay calculation
     if (log_)
-        *log_ << p.arrival_time / 1000000 << " DELAY_CALCULATED: " << (p.dequeue_time - p.arrival_time) / 1000000 << " ms" << endl;
+        *log_ << p.arrival_time << " DELAY_CALCULATED: " << (p.dequeue_time - p.arrival_time) << " ms" << endl;
 }
 
 void BBRAttackQueue::read_packet(const string &contents)
 {
-    uint64_t now = timestamp_nano();
+    uint64_t now = timestamp();
     Packet p = {now, now, contents};
     detectState(p);
     computeDelay(p);
@@ -93,17 +93,17 @@ void BBRAttackQueue::read_packet(const string &contents)
 
     // Log the arrival
     if (log_)
-        *log_ << now / 1000000 << " + " << contents.size() << endl;
+        *log_ << now << " + " << contents.size() << endl;
 }
 
 void BBRAttackQueue::write_packets(FileDescriptor &fd)
 {
-    while ((!packet_queue_.empty()) && (packet_queue_.front().dequeue_time <= timestamp_nano()))
+    while ((!packet_queue_.empty()) && (packet_queue_.front().dequeue_time <= timestamp()))
     {
         fd.write(packet_queue_.front().contents);
         // Log the departure
         if (log_)
-            *log_ << packet_queue_.front().dequeue_time / 1000000 << " - " << packet_queue_.front().contents.size() << endl;
+            *log_ << packet_queue_.front().dequeue_time << " - " << packet_queue_.front().contents.size() << endl;
         packet_queue_.pop();
     }
 }
@@ -115,7 +115,7 @@ unsigned int BBRAttackQueue::wait_time(void) const
         return numeric_limits<uint16_t>::max();
     }
 
-    const auto now = timestamp_nano();
+    const auto now = timestamp();
 
     if (packet_queue_.front().dequeue_time <= now)
     {

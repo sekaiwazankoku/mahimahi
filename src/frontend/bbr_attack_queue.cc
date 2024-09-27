@@ -14,7 +14,7 @@ using namespace std;
 BBRAttackQueue::BBRAttackQueue(
     const double attack_rate_,
     const uint64_t k_,
-    const uint64_t delay_budget_)
+    const uint64_t delay_budget_, const std::string &logfile_)
     : attack_rate(attack_rate_),
       k(k_),
       delay_budget(delay_budget_),
@@ -22,7 +22,9 @@ BBRAttackQueue::BBRAttackQueue(
       current_arrival_rate(attack_rate_),
       state(CRUISE),
       packet_queue_(),
-      log_()
+      log_(nullptr),
+      logfile(logfile_)
+       
 {
     // adding the logging fucntionality
     if (!logfile.empty()) {

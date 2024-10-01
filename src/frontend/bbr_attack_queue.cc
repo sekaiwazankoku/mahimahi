@@ -18,7 +18,7 @@ BBRAttackQueue::BBRAttackQueue(
     : attack_rate(attack_rate_),
       k(k_),
       delay_budget(delay_budget_),
-      logfile(logfile_),
+      logfile(logfile),
       log_(nullptr),
       arrival_rate(0),
       current_arrival_rate(attack_rate_),

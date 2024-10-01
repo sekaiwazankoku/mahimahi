@@ -9,6 +9,8 @@
 #include "bbr_attack_queue.hh"
 #include "timestamp.hh"
 
+// #define DEBUG_MODE
+
 using namespace std;
 
 BBRAttackQueue::BBRAttackQueue(
@@ -58,6 +60,11 @@ void BBRAttackQueue::computeDelay(Packet &p)
         last = max(prev.dequeue_time, last);
     }
     p.dequeue_time = last + d;
+
+#ifdef DEBUG_MODE
+    uint64_t delay_added = p.dequeue_time - p.arrival_time;
+    std::cout << getpid() << ", " << packet_queue_.size() << ", " << delay_added << ", " << p.contents.size() << ", " << p.arrival_time << endl;
+#endif
 
     assert(p.dequeue_time - p.arrival_time <= delay_budget);
 }

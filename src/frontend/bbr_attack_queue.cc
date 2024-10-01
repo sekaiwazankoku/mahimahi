@@ -22,8 +22,8 @@ BBRAttackQueue::BBRAttackQueue(
       current_arrival_rate(attack_rate_),
       state(CRUISE),
       packet_queue_(),
-      log_(nullptr),
       logfile(logfile_)
+      log_(nullptr)
        
 {
     // adding the logging fucntionality

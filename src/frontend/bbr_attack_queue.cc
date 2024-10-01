@@ -23,7 +23,7 @@ BBRAttackQueue::BBRAttackQueue(
       state(CRUISE),
       packet_queue_(),
       logfile(logfile),
-      log_(nullptr),
+      log_(nullptr)
 {
     // adding the logging fucntionality
     if (!logfile.empty()) {

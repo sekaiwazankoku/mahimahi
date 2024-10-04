@@ -37,11 +37,14 @@ private:
     BBRPhase state;
     std::queue<Packet> packet_queue_;
 
+    std::string logfile;  // Add logfile string member
+    std::unique_ptr<std::ofstream> log_;  // Add log_ for logging functionality
+
     void detectState(Packet &p);
     void computeDelay(Packet &p);
 
 public:
-    BBRAttackQueue(const double attack_rate_, const uint64_t k_, const uint64_t delay_budget_);
+    BBRAttackQueue(const double attack_rate_, const uint64_t k_, const uint64_t delay_budget_, const std::string &logfile_ = "");
 
     void read_packet(const std::string &contents);
 

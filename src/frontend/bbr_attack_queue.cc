@@ -14,15 +14,29 @@ using namespace std;
 BBRAttackQueue::BBRAttackQueue(
     const double attack_rate_,
     const uint64_t k_,
-    const uint64_t delay_budget_)
-    : attack_rate(attack_rate_), // Bytes per millisecond
+    const uint64_t delay_budget_, const std::string &logfile)
+    : attack_rate(attack_rate_),
       k(k_),
       delay_budget(delay_budget_),
       arrival_rate(0),
       current_arrival_rate(attack_rate_),
       state(CRUISE),
-      packet_queue_()
+      packet_queue_(),
+      logfile(logfile),
+      log_(nullptr)
 {
+    // adding the logging fucntionality
+    if (!logfile.empty()) {
+        log_.reset(new ofstream(logfile));
+        if (!log_->is_open()) {
+            cerr << logfile << ": error opening for writing" << endl;
+            exit(EXIT_FAILURE);
+        }
+        
+        *log_ << "# mm-bbr-attack log" << endl;
+        *log_ << "# attack_rate: " << attack_rate << " queue_size: " << k << " delay_budget: " << delay_budget << endl;
+        *log_ << "# base timestamp: " << timestamp() << endl;
+    }
 }
 
 void BBRAttackQueue::detectState(Packet &p)
@@ -45,6 +59,10 @@ void BBRAttackQueue::detectState(Packet &p)
             arrival_rate = current_arrival_rate; // Update arrival_rate
             state = CRUISE;
         }
+        
+        // Log the state change
+        if (log_)
+            *log_ << p.arrival_time << " STATE_CHANGE: " << state << endl; // Convert to ms (?)
     }
 }
 
@@ -60,6 +78,10 @@ void BBRAttackQueue::computeDelay(Packet &p)
     p.dequeue_time = last + d;
 
     assert(p.dequeue_time - p.arrival_time <= delay_budget);
+
+    // Log the delay calculation
+    if (log_)
+        *log_ << p.arrival_time << " DELAY_CALCULATED: " << (p.dequeue_time - p.arrival_time) << " ms" << endl;
 }
 
 void BBRAttackQueue::read_packet(const string &contents)
@@ -69,6 +91,10 @@ void BBRAttackQueue::read_packet(const string &contents)
     // detectState(p);
     computeDelay(p);
     packet_queue_.emplace(p);
+
+    // Log the arrival
+    if (log_)
+        *log_ << now << " + " << contents.size() << endl;
 }
 
 void BBRAttackQueue::write_packets(FileDescriptor &fd)
@@ -76,6 +102,9 @@ void BBRAttackQueue::write_packets(FileDescriptor &fd)
     while ((!packet_queue_.empty()) && (packet_queue_.front().dequeue_time <= timestamp()))
     {
         fd.write(packet_queue_.front().contents);
+        // Log the departure
+        if (log_)
+            *log_ << packet_queue_.front().dequeue_time << " - " << packet_queue_.front().contents.size() << endl;
         packet_queue_.pop();
     }
 }

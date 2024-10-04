@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
         if (argc < arg_num)
         {
             // todo
-            throw runtime_error("Usage: mm-bbr-attack [attack rate] [queue size] [delay budget]");
+            throw runtime_error("Usage: mm-bbr-attack [attack rate] [queue size] [delay budget] --attack-log=FILE");
         }
 
         const double attack_rate = myatof(argv[1]);
@@ -35,22 +35,23 @@ int main(int argc, char *argv[])
 
         vector<string> command;
 
-        if (argc == arg_num)
+        for (int i = arg_num; i < argc; i++)
         {
-            command.push_back(shell_path());
-        }
-        else
-        {
-            for (int i = arg_num; i < argc; i++)
+            string arg = argv[i];
+            if (arg.rfind("--attack-log=", 0) == 0)  // Check if it starts with --attack-log=
             {
-                command.push_back(argv[i]);
+                attack_logfile = arg.substr(13);  // Extract the log file path
+            }
+            else
+            {
+                command.push_back(argv[i]);  // Add remaining arguments (for command)
             }
         }
 
         PacketShell<BBRAttackQueue> bbr_attack_shell_app("bbr_attack", user_environment, passthrough_until_signal);
 
-        bbr_attack_shell_app.start_uplink("[attack] ", command, attack_rate, queue_size, delay_budget);
-        bbr_attack_shell_app.start_downlink(attack_rate, queue_size, delay_budget);
+        bbr_attack_shell_app.start_uplink("[attack] ", command, attack_rate, queue_size, delay_budget, attack_logfile);
+        bbr_attack_shell_app.start_downlink(attack_rate, queue_size, delay_budget, attack_logfile);
         return bbr_attack_shell_app.wait_for_exit();
     }
     catch (const exception &e)

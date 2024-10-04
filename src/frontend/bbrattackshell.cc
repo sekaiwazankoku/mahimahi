@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
         char **const user_environment = environ;
         environ = nullptr;
 
-        const int arg_num = 5;
+        const int arg_num = 4;
         check_requirements(argc, argv);
 
         if (argc < arg_num)

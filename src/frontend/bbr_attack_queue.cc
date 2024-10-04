@@ -9,6 +9,8 @@
 #include "bbr_attack_queue.hh"
 #include "timestamp.hh"
 
+// #define DEBUG_MODE
+
 using namespace std;
 
 BBRAttackQueue::BBRAttackQueue(
@@ -18,6 +20,7 @@ BBRAttackQueue::BBRAttackQueue(
     : attack_rate(attack_rate_),
       k(k_),
       delay_budget(delay_budget_),
+      acc_delay(0),
       arrival_rate(0),
       current_arrival_rate(attack_rate_),
       state(CRUISE),
@@ -68,7 +71,10 @@ void BBRAttackQueue::detectState(Packet &p)
 
 void BBRAttackQueue::computeDelay(Packet &p)
 {
-    const uint64_t d = (double)p.contents.size() / attack_rate;
+    double total_delay = acc_delay + (double)p.contents.size() / attack_rate;
+    const uint64_t d = (uint64_t)total_delay;
+    acc_delay = total_delay - d;
+
     uint64_t last = p.arrival_time;
     if (!packet_queue_.empty())
     {
@@ -76,6 +82,11 @@ void BBRAttackQueue::computeDelay(Packet &p)
         last = max(prev.dequeue_time, last);
     }
     p.dequeue_time = last + d;
+
+#ifdef DEBUG_MODE
+    uint64_t delay_added = p.dequeue_time - p.arrival_time;
+    std::cout << getpid() << ", " << packet_queue_.size() << ", " << delay_added << ", " << p.contents.size() << ", " << p.arrival_time << endl;
+#endif
 
     assert(p.dequeue_time - p.arrival_time <= delay_budget);
 

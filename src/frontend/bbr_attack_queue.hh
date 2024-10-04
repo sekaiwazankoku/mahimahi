@@ -32,6 +32,8 @@ private:
     const uint64_t k;
     const uint64_t delay_budget;
 
+    double acc_delay;
+
     double arrival_rate;
     double current_arrival_rate;
     BBRPhase state;

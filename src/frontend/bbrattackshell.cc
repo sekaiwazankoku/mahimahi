@@ -34,7 +34,8 @@ int main(int argc, char *argv[])
         const uint64_t delay_budget = myatoi(argv[3]);
 
         vector<string> command;
-
+        string attack_logfile;
+        
         for (int i = arg_num; i < argc; i++)
         {
             string arg = argv[i];

@@ -35,6 +35,13 @@ int main(int argc, char *argv[])
 
         vector<string> command;
         string attack_logfile;
+
+        //added the if statement
+
+        if (argc ==arg_num +1)
+        {
+            command.push_back(shell_path());
+        }
         
         for (int i = arg_num; i < argc; i++)
         {

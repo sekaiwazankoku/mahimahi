@@ -16,7 +16,7 @@ using namespace std;
 BBRAttackQueue::BBRAttackQueue(
     const double attack_rate_,
     const uint64_t k_,
-    const uint64_t delay_budget_, const std::string &logfile)
+    const uint64_t delay_budget_, const std::string logfile)
     : attack_rate(attack_rate_),
       k(k_),
       delay_budget(delay_budget_),
@@ -26,13 +26,13 @@ BBRAttackQueue::BBRAttackQueue(
       state(CRUISE),
       packet_queue_(),
       logfile(logfile),
-      log_(nullptr)
+      log_()
 {
     // adding the logging fucntionality
     if (!logfile.empty()) {
         log_.reset(new ofstream(logfile));
         if (!log_->is_open()) {
-            cerr << logfile << ": error opening for writing" << endl;
+            cout << logfile << ": error opening for writing" << endl;
             exit(EXIT_FAILURE);
         }
         

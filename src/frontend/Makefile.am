@@ -46,6 +46,11 @@ mm_replayserver_SOURCES = replayserver.cc
 mm_replayserver_LDADD = -lrt ../util/libutil.a ../http/libhttp.a ../protobufs/libhttprecordprotos.a $(protobuf_LIBS)
 mm_replayserver_LDFLAGS = -pthread
 
+bin_PROGRAMS += mm-copa-attack
+mm_copa_attack_SOURCES = copaattackshell.cc copa_attack_queue.hh copa_attack_queue.cc
+mm_copa_attack_LDADD = -lrt ../util/libutil.a ../packet/libpacket.a
+mm_copa_attack_LDFLAGS = -pthread
+
 lib_LTLIBRARIES = libmod_deepcgi.la
 libmod_deepcgi_la_SOURCES = mod_deepcgi.c replayserver_filename.cc
 libmod_deepcgi_la_CFLAGS = -I@APACHE2_INCLUDE@ $(libapr1_CFLAGS)
@@ -68,3 +73,5 @@ install-exec-hook:
 	chmod u+s $(DESTDIR)$(bindir)/mm-webrecord
 	chown root $(DESTDIR)$(bindir)/mm-webreplay
 	chmod u+s $(DESTDIR)$(bindir)/mm-webreplay
+	chown root $(DESTDIR)$(bindir)/mm-copa-attack
+	chmod u+s $(DESTDIR)$(bindir)/mm-copa-attack

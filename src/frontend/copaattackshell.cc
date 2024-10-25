@@ -22,16 +22,18 @@ int main(int argc, char *argv[])
 
         check_requirements(argc, argv);
 
-        int arg_num = 4;
+        int arg_num = 6;
 
         if (argc < arg_num)
         {
-            throw runtime_error("Usage: " + string(argv[0]) + " delay_budget-milliseconds uplink_logfile downlink_logfile [command...]");
+            throw runtime_error("Usage: " + string(argv[0]) + " delay_budget-milliseconds uplink_logfile downlink_logfile uplink_attacklog downlink_attacklog [command...]");
         }
 
         const uint64_t delay_budget = myatoi(argv[1]);
         const string uplink_filename = argv[2];
         const string downlink_filename = argv[3];
+        const string uplink_attack_filename = argv[4];
+        const string downlink_attack_filename = argv[5];
 
         vector<string> command;
 
@@ -52,8 +54,9 @@ int main(int argc, char *argv[])
         delay_shell_app.start_uplink("[copa_attack] ",
                                      command,
                                      delay_budget,
-                                     uplink_filename);
-        delay_shell_app.start_downlink(delay_budget, downlink_filename);
+                                     uplink_filename,
+                                     uplink_attack_filename);
+        delay_shell_app.start_downlink(delay_budget, downlink_filename, downlink_attack_filename);
         return delay_shell_app.wait_for_exit();
     }
     catch (const exception &e)

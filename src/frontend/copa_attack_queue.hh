@@ -24,10 +24,11 @@ private:
     uint64_t delay_budget_;
     std::queue<Packet> packet_queue_;
     std::unique_ptr<std::ofstream> log_;
+    std::unique_ptr<std::ofstream> attack_log_;
     /* release timestamp, contents */
 
 public:
-    CopaAttackQueue(const uint64_t &delay_budget, const std::string &link_log);
+    CopaAttackQueue(const uint64_t &delay_budget, const std::string &link_log, const std::string &attack_log);
 
     void read_packet(const std::string &contents);
 

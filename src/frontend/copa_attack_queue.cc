@@ -7,9 +7,10 @@
 
 using namespace std;
 
-CopaAttackQueue::CopaAttackQueue(const uint64_t &delay_budget, const string &link_log) : delay_budget_(delay_budget),
-                                                                                         packet_queue_(),
-                                                                                         log_()
+CopaAttackQueue::CopaAttackQueue(const uint64_t &delay_budget, const string &link_log, const std::string &attack_log) : delay_budget_(delay_budget),
+                                                                                                                        packet_queue_(),
+                                                                                                                        log_(),
+                                                                                                                        attack_log_()
 {
     // srand(time(NULL));
     /* open logfile if called for */
@@ -30,6 +31,15 @@ CopaAttackQueue::CopaAttackQueue(const uint64_t &delay_budget, const string &lin
         if (prefix)
         {
             *log_ << "# mahimahi config: " << prefix << endl;
+        }
+    }
+
+    if (not attack_log.empty())
+    {
+        attack_log_.reset(new ofstream(attack_log));
+        if (not attack_log_->good())
+        {
+            throw runtime_error(attack_log + ": error opening for writing");
         }
     }
 }
@@ -65,6 +75,12 @@ void CopaAttackQueue::read_packet(const string &contents)
         // delay = rand() % delay_budget_;
         delay = delay_budget_;
     }
+    // Log computed delay
+    if (attack_log_)
+    {
+        *attack_log_ << "timestamp " << now << ", delay " << delay << endl;
+    }
+
     dequeue_time += delay;
     Packet p = {now, dequeue_time, contents};
     packet_queue_.emplace(p);

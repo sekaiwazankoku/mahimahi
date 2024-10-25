@@ -6,18 +6,28 @@
 #include <queue>
 #include <cstdint>
 #include <string>
+#include <fstream>
+#include <memory>
 
 #include "file_descriptor.hh"
+
+struct Packet
+{
+    uint64_t arrival_time;
+    uint64_t dequeue_time;
+    const std::string contents;
+};
 
 class CopaAttackQueue
 {
 private:
     uint64_t delay_budget_;
-    std::queue<std::pair<uint64_t, std::string>> packet_queue_;
+    std::queue<Packet> packet_queue_;
+    std::unique_ptr<std::ofstream> log_;
     /* release timestamp, contents */
 
 public:
-    CopaAttackQueue(const uint64_t &delay_budget);
+    CopaAttackQueue(const uint64_t &delay_budget, const std::string &link_log);
 
     void read_packet(const std::string &contents);
 
@@ -28,6 +38,11 @@ public:
     bool pending_output(void) const { return wait_time() <= 0; }
 
     static bool finished(void) { return false; }
+
+    void record_arrival(const uint64_t arrival_time, const size_t pkt_size);
+    // void record_drop(const uint64_t time, const size_t pkts_dropped, const size_t bytes_dropped);
+    // void record_departure_opportunity(void);
+    void record_departure(const uint64_t departure_time, const uint64_t arrival_time, const size_t pkt_size);
 };
 
 #endif /* COPA_ATTACK_QUEUE_HH */

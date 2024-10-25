@@ -24,7 +24,7 @@ CopaAttackQueue::CopaAttackQueue(const uint64_t &delay_budget, const string &lin
 
         // *log_ << "# mahimahi mm-link (" << link_name << ") [" << filename << "] > " << logfile << endl;
         // *log_ << "# command line: " << command_line << endl;
-        *log_ << "# queue: " << "droptail [bytes=0]" << endl;
+        *log_ << "# queue: " << "droptail [bytes=1000000]" << endl;
         *log_ << "# init timestamp: " << initial_timestamp() << endl;
         *log_ << "# base timestamp: " << timestamp() << endl;
         const char *prefix = getenv("MAHIMAHI_SHELL_PREFIX");

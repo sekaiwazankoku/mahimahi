@@ -39,6 +39,9 @@ BBRAttackQueue::BBRAttackQueue(
         *log_ << "# mm-bbr-attack log" << endl;
         *log_ << "# attack_rate: " << attack_rate << " queue_size: " << k << " delay_budget: " << delay_budget << endl;
         *log_ << "# base timestamp: " << timestamp() << endl;
+        *log_ << "# queue: " << "droptail [bytes=1000000]" << endl;
+        //*log_ << "# queue: " << packet_queue_.size() << endl; //need to add packet_queue size
+        *log_ << "# init timestamp: " << initial_timestamp() << endl;
     }
 }
 
@@ -64,8 +67,8 @@ void BBRAttackQueue::detectState(Packet &p)
         }
         
         // Log the state change
-        if (log_)
-            *log_ << p.arrival_time << " STATE_CHANGE: " << state << endl; // Convert to ms (?)
+         //if (log_)
+           //*log_ << p.arrival_time << " STATE_CHANGE: " << state << endl; 
     }
 }
 
@@ -92,7 +95,10 @@ void BBRAttackQueue::computeDelay(Packet &p)
 
     // Log the delay calculation
     if (log_)
-        *log_ << p.arrival_time << " DELAY_CALCULATED: " << (p.dequeue_time - p.arrival_time) << " ms" << endl;
+       {
+         *log_ << p.arrival_time << " DELAY_CALCULATED: " << (p.dequeue_time - p.arrival_time) << " ms" << std::endl;
+         log_->flush();
+       }
 }
 
 void BBRAttackQueue::read_packet(const string &contents)
@@ -105,7 +111,10 @@ void BBRAttackQueue::read_packet(const string &contents)
 
     // Log the arrival
     if (log_)
-        *log_ << now << " + " << contents.size() << endl;
+       { 
+        *log_ << now << " + " << contents.size() << std::endl;
+        log_->flush();
+       }
 }
 
 void BBRAttackQueue::write_packets(FileDescriptor &fd)
@@ -115,7 +124,10 @@ void BBRAttackQueue::write_packets(FileDescriptor &fd)
         fd.write(packet_queue_.front().contents);
         // Log the departure
         if (log_)
-            *log_ << packet_queue_.front().dequeue_time << " - " << packet_queue_.front().contents.size() << endl;
+            {
+                *log_ << packet_queue_.front().dequeue_time << " - " << packet_queue_.front().contents.size() << std::endl;
+                log_->flush();
+            }
         packet_queue_.pop();
     }
 }

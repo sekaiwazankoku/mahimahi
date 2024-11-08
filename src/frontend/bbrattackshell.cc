@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
         PacketShell<BBRAttackQueue> bbr_attack_shell_app("bbr_attack", user_environment, passthrough_until_signal);
 
         bbr_attack_shell_app.start_uplink("[attack] ", command, attack_rate, queue_size, delay_budget, attack_logfile);
-        bbr_attack_shell_app.start_downlink(attack_rate, queue_size, delay_budget); //put condition for the last parameter
+        bbr_attack_shell_app.start_downlink(attack_rate, queue_size, delay_budget); // Put condition for the last parameter
         return bbr_attack_shell_app.wait_for_exit();
     }
     catch (const exception &e)
